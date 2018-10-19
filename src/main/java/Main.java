@@ -1,5 +1,6 @@
 import util.Document;
 import util.DocumentCollection;
+import util.LogisticRegressionClassifier;
 import util.NaiveBayesClassifier;
 
 import java.io.*;
@@ -21,12 +22,12 @@ public class Main {
         }
     }
 
-    private static ArrayList<Document> getDocuments(String directoryPath) {
+    private static ArrayList<Document> getDocuments(String directoryPath, Boolean removeStopWords) {
         File[] files = new File(directoryPath).listFiles();
         ArrayList<Document> documents = new ArrayList<>();
         for (File f : files) {
             try {
-                documents.add(new Document(fileToString(f), true));
+                documents.add(new Document(fileToString(f), removeStopWords));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -35,27 +36,39 @@ public class Main {
     }
 
     public static void main(String args[]) {
-        DocumentCollection spamDocumentCollection = new DocumentCollection(getDocuments("train/spam"));
-        DocumentCollection hamDocumentCollection  = new DocumentCollection(getDocuments("train/ham"));
+        Boolean removeStopWords = false;
+
+        //////////////
+        // LEARNING //
+        //////////////
+
+        DocumentCollection spamDocumentCollection = new DocumentCollection(getDocuments("train/spam", removeStopWords));
+        DocumentCollection hamDocumentCollection  = new DocumentCollection(getDocuments("train/ham", removeStopWords));
 
         NaiveBayesClassifier nbc = new NaiveBayesClassifier(spamDocumentCollection, hamDocumentCollection);
+        LogisticRegressionClassifier lrc = new LogisticRegressionClassifier(spamDocumentCollection, hamDocumentCollection);
 
+        /////////////
+        // TESTING //
+        /////////////
 
-        ArrayList<Document> testSpamDocuments = getDocuments("test/spam");
-        double falseNegativeCount = 0d;
+        ArrayList<Document> testSpamDocuments = getDocuments("test/spam", removeStopWords);
+        ArrayList<Document> testHamDocuments = getDocuments("test/ham", removeStopWords);
+
+        double nbCorrectCount = 0d;
+        double lrCorrectCount = 0d;
+        double totalDocuments = (double) (testSpamDocuments.size() + testHamDocuments.size());
+
         for (Document d: testSpamDocuments) {
-            if (!nbc.isDocumentSpam(d)) falseNegativeCount++;
+            if (nbc.isDocumentSpam(d)) nbCorrectCount++;
+            if (lrc.isDocumentSpam(d)) lrCorrectCount++;
         }
-        System.out.println("false negative count: " + falseNegativeCount);
-        System.out.println("num test spam documents: " + testSpamDocuments.size());
-
-
-        ArrayList<Document> testHamDocuments = getDocuments("test/ham");
-        double falsePositiveCount = 0d;
         for (Document d: testHamDocuments) {
-            if (nbc.isDocumentSpam(d)) falsePositiveCount++;
+            if (!nbc.isDocumentSpam(d)) nbCorrectCount++;
+            if (!lrc.isDocumentSpam(d)) lrCorrectCount++;
         }
-        System.out.println("false positive count: " + falsePositiveCount);
-        System.out.println("num test ham documents: " + testHamDocuments.size());
+
+        System.out.println("Naive Bayes Accuracy: " + nbCorrectCount/totalDocuments);
+        System.out.println("Logistic Regression Accuracy: " + lrCorrectCount/totalDocuments);
     }
 }
