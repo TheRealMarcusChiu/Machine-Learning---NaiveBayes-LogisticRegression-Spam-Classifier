@@ -64,6 +64,10 @@ public class Main {
         Double alpha = Double.parseDouble(args[3]); //0.01d;
         Double lambda = Double.parseDouble(args[4]); //0.0d;
 
+        System.out.println("executing with iterations = " + args[2]);
+        System.out.println("executing with alpha = " + args[3]);
+        System.out.println("executing with lambda = " + args[4]);
+
         //////////////
         // LEARNING //
         //////////////
