@@ -21,6 +21,8 @@ public class LogisticRegressionClassifier {
             this.weightVector.put(term, .001d); //(double)(Math.random() <= 0.5 ? 1 : -1)
         }
 
+        this.weightVector.put("", .001d); // for bias
+
         this.gradientDescent(spamDocuments, hamDocuments, maxIterations, alpha, lambda);
     }
 
@@ -40,9 +42,13 @@ public class LogisticRegressionClassifier {
             for (Map.Entry<String, Double> entry : this.weightVector.entrySet()) {
                 String term = entry.getKey();
                 Double termWeight = entry.getValue();
-                deltaWeightVector.put(
-                        term,
-                        deltaWeight(term, termWeight, spamDocuments, hamDocuments, alphaOverM, lambda));
+                Double deltaWeight;
+                if (term.equals("")) {
+                    deltaWeight = deltaWeight(spamDocuments, hamDocuments, alphaOverM, lambda);
+                } else {
+                    deltaWeight = deltaWeight(term, termWeight, spamDocuments, hamDocuments, alphaOverM, lambda);
+                }
+                deltaWeightVector.put(term, deltaWeight);
             }
 
             for (Map.Entry<String, Double> entry : this.weightVector.entrySet()) {
@@ -53,6 +59,25 @@ public class LogisticRegressionClassifier {
             }
             System.out.println("iteration " + (i+1) + " finished");
         }
+    }
+
+    private Double deltaWeight(ArrayList<Document> spamDocuments, ArrayList<Document> hamDocuments, Double alphaOverM,  Double lambda) {
+        Double deltaWeight = 0d;
+
+        for (Document d : spamDocuments) {
+            if (!isDocumentSpam(d)) {
+                deltaWeight -= 1d;
+            }
+        }
+
+        for (Document d : hamDocuments) {
+            if (isDocumentSpam(d)) {
+                deltaWeight += 1d;
+            }
+        }
+
+        deltaWeight *= alphaOverM;
+        return deltaWeight;
     }
 
     /**
@@ -85,11 +110,18 @@ public class LogisticRegressionClassifier {
         return deltaWeight;
     }
 
+    /**
+     * no need for sigmoid function
+     * @param document
+     * @return
+     */
     public Boolean isDocumentSpam(Document document) {
         Double value = 0d;
         for (Map.Entry<String, Integer> entry : document.getTokenFrequency().entrySet()) {
             value += this.weightVector.getOrDefault(entry.getKey(), 0d) * entry.getValue();
         }
+
+        value += this.weightVector.get(""); // for bias
 
         if (value > 0) return true;
         if (value < 0) return false;
