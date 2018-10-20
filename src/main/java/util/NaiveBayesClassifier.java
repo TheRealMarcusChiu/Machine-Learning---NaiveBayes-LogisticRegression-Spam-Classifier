@@ -21,7 +21,7 @@ public class NaiveBayesClassifier {
         this.conditionalLogProbabilitiesSpam = new TreeMap<>();
         this.conditionalLogProbabilitiesHam = new TreeMap<>();
 
-        this.vocabulary = this.getVocabulary(spamDocuments, hamDocuments);
+        this.vocabulary = DocumentCollection.getVocabulary(spamDocuments, hamDocuments);
 
         int laplaceDenominatorSpam = spamDocuments.getTotalTokens() + vocabulary.size();
         int laplaceDenominatorHam  =  hamDocuments.getTotalTokens() + vocabulary.size();
@@ -33,22 +33,6 @@ public class NaiveBayesClassifier {
             this.conditionalLogProbabilitiesSpam.put(term, Math.log((double)spamValue / (double)laplaceDenominatorSpam));
             this.conditionalLogProbabilitiesHam.put( term, Math.log((double)hamValue  / (double)laplaceDenominatorHam));
         }
-    }
-
-    private Set<String> getVocabulary(DocumentCollection spamDocuments, DocumentCollection hamDocuments) {
-        Set<String> vocabulary = new HashSet<>();
-
-        for(Map.Entry<String,Integer> entry : spamDocuments.getTokenFrequency().entrySet()) {
-            String key = entry.getKey();
-            vocabulary.add(key);
-        }
-
-        for(Map.Entry<String,Integer> entry : hamDocuments.getTokenFrequency().entrySet()) {
-            String key = entry.getKey();
-            vocabulary.add(key);
-        }
-
-        return vocabulary;
     }
 
     public Boolean isDocumentSpam(Document document) {

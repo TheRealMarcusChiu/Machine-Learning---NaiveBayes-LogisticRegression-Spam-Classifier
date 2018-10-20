@@ -9,6 +9,34 @@ import lombok.Data;
 @Data
 public class Document {
 
+    Integer totalTokens;
+    Map<String, Integer> tokenFrequency;
+
+    public Document(String content, Boolean removeStopWords) {
+        String[] tokens = content.toLowerCase()
+                .replaceAll("[^a-zA-Z]+"," ")
+                .split("[ ]+");
+
+        if (removeStopWords) {
+            ArrayList<String> newTokens = new ArrayList<>();
+            for (String token : tokens) {
+                if (!STOP_WORDS.contains(token)) newTokens.add(token);
+            }
+            tokens = newTokens.toArray(new String[newTokens.size()]);
+        }
+
+        this.totalTokens = tokens.length;
+        this.tokenFrequency = new TreeMap<>();
+
+        for (String token : tokens){
+            if (!this.tokenFrequency.containsKey(token)) {
+                this.tokenFrequency.put(token, 1);
+            } else {
+                this.tokenFrequency.put(token, this.tokenFrequency.get(token) + 1);
+            }
+        }
+    }
+
     public static ArrayList<String> STOP_WORDS;
     static{
         STOP_WORDS = new ArrayList<>(Arrays.asList(
@@ -188,33 +216,5 @@ public class Document {
                 "yourselves"
         )
         );
-    }
-
-    Integer totalTokens;
-    Map<String, Integer> tokenFrequency;
-
-    public Document(String content, Boolean removeStopWords) {
-        String[] tokens = content.toLowerCase()
-                .replaceAll("[^a-zA-Z]+"," ")
-                .split("[ ]+");
-
-        if (removeStopWords) {
-            ArrayList<String> newTokens = new ArrayList<>();
-            for (String token : tokens) {
-                if (!STOP_WORDS.contains(token)) newTokens.add(token);
-            }
-            tokens = newTokens.toArray(new String[newTokens.size()]);
-        }
-
-        this.totalTokens = tokens.length;
-        this.tokenFrequency = new TreeMap<>();
-
-        for (String token : tokens){
-            if (!this.tokenFrequency.containsKey(token)) {
-                this.tokenFrequency.put(token, 1);
-            } else {
-                this.tokenFrequency.put(token, this.tokenFrequency.get(token) + 1);
-            }
-        }
     }
 }

@@ -36,4 +36,20 @@ public class DocumentCollection {
             }
         }
     }
+
+    public static Set<String> getVocabulary(DocumentCollection spamDocuments, DocumentCollection hamDocuments) {
+        Set<String> vocabulary = new HashSet<>();
+
+        for(Map.Entry<String,Integer> entry : spamDocuments.getTokenFrequency().entrySet()) {
+            String key = entry.getKey();
+            vocabulary.add(key);
+        }
+
+        for(Map.Entry<String,Integer> entry : hamDocuments.getTokenFrequency().entrySet()) {
+            String key = entry.getKey();
+            vocabulary.add(key);
+        }
+
+        return vocabulary;
+    }
 }
